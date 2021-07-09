@@ -1,6 +1,9 @@
+print("hello")
+
 import numpy as np
 import pandas as pd
 import openpyxl
+from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
 
 print('테이블 명세서 코드')
 
@@ -43,67 +46,77 @@ for i in tableNameIndex:
 ## 엑셀 파일 만들기
 
 
-
+wb = openpyxl.Workbook()
 def createWB(a):
-    wb = openpyxl.Workbook()
+    
     print(str(a) + "번째 엑셀시트 생성")
-    sheets = ['sheet%d' % a]
-    for x in sheets:
 
-        x = wb.create_sheet('sheet' + str(a))
-        x.title = '테이블명세서' + str(a)
+    lenarr2 = len(arrTableNames)
+    for aa in range(lenarr2):
+        #aa = str(aa)
+        aa = wb.create_sheet('sheet' + str(a))
+        aa.title = str(a+1)
         print(str(a) + "번째 엑셀시트의 헤드 작성")
-        printTableHead(x)
+        printTableHead(aa)
         print(str(a) + "번째 엑셀시트의 값 작성")
-        printTableValues(x,a)
+        printTableValues(aa, a)
+        break
+   
     
     ##엑셀파일 저장
+    print("엑셀파일 저장")
     wb.save(filename="test.xlsx")
     
 
 ## 테이블명세서의 헤더 만드는 함수.
 
-def printTableHead(x):
+def printTableHead(aa):
 
-    x.merge_cells('A1:D1') 
-    x['A1']= '테이블 이름'
-    x.merge_cells('E1:J1')
-    x.merge_cells('A2:D2') 
-    x['A2']= '테이블 설명'
-    x.merge_cells('E2:J2')
-    x.merge_cells('A3:D3') 
-    x['A3']= 'PRIMARY KEY'
-    x.merge_cells('E3:J3') 
-    x.merge_cells('A4:D4') 
-    x['A4']= 'FOREIGN KEY'
-    x.merge_cells('A5:D5') 
-    x['A5']= 'INDEX'
-    x.merge_cells('A6:D6') 
-    x['A6']= 'UNIQUE INDEX'
-    x.merge_cells('E4:J4')
-    x.merge_cells('E5:J5') 
-    x.merge_cells('E6:J6') 
-    x['A7']= 'NO'
-    x['B7']= 'PK'
-    x['C7']= 'AI'
-    x['D7']= 'FK'
-    x['E7']= 'NULL'
-    x['F7']= '컬럼 이름'
-    x['G7']= 'TYPE'
-    x['H7']= 'DEFAULT'
-    x['I7']= '설명'
-    x['J7']= '참조 테이블'
+    aa.merge_cells('A1:D1') 
+    aa['A1']= '테이블 이름'
+    aa.merge_cells('E1:J1')
+    aa.merge_cells('A2:D2') 
+    aa['A2']= '테이블 설명'
+    aa.merge_cells('E2:J2')
+    aa.merge_cells('A3:D3') 
+    aa['A3']= 'PRIMARY KEY'
+    aa.merge_cells('E3:J3') 
+    aa.merge_cells('A4:D4') 
+    aa['A4']= 'FOREIGN KEY'
+    aa.merge_cells('A5:D5') 
+    aa['A5']= 'INDEX'
+    aa.merge_cells('A6:D6') 
+    aa['A6']= 'UNIQUE INDEX'
+    aa.merge_cells('E4:J4')
+    aa.merge_cells('E5:J5') 
+    aa.merge_cells('E6:J6') 
+    aa['A7']= 'NO'
+    aa.merge_cells('B7:C7')
+    aa['B7']= 'PK/AI/FK'
+    aa['D7']= 'NULL'
+    aa.merge_cells('E7:F7')
+    aa['E7']= '컬럼 이름'
+    #aa['F7']= '컬럼 이름'
+    aa['G7']= 'TYPE'
+    aa['H7']= 'DEFAULT'
+    aa['I7']= '설명'
+    aa['J7']= '참조 테이블'
+
+
+
+
+
 
 ##테이블의 값 넣는 함수
-def printTableValues(x,a):
+def printTableValues(aa, a):
     print(str(a) + "값 insert 시작")
 
     i = arrTableNames[a]
     j = arrTableInfo[a]
     #테이블명 입력
-    x['E1'] = i
+    aa['E1'] = i
     #논리테이블명입력
-    x['E2'] = j
+    aa['E2'] = j
     ## 각 테이블명의 각각의 데이터프레임 새로 생성
     tableDetailByName = dbInfo.loc[dbInfo['테이블명'] == arrTableNames[a]]
     #PK조사
@@ -118,7 +131,7 @@ def printTableValues(x,a):
             yStr += thisPK['컬럼명'].values[y]
 
         #PK정보입력
-        x['E3']= yStr
+        aa['E3']= yStr
     #FK조사
     thisFK = tableDetailByName.loc[tableDetailByName['KEY']=='MUL']
     FKString = thisFK['컬럼명'].values
@@ -129,72 +142,145 @@ def printTableValues(x,a):
     else:
         lenFK = len(FKString)
         for z in range(lenFK):
-            zStr += thisFK['컬럼명'].values[z]
-        x['E4']= zStr
+            zStr += thisFK['컬럼명'].values[z] + ' '
+        aa['E4']= zStr
 
     #컬럼의 갯수조사 인덱스 설정
-    nn = tableDetailByName.index +1
+    nn = len(tableDetailByName.index)
+    nArrNum=[]
+    for nNum in range(nn):
+        nArrNum += [nNum + 1]
+
+    print(nArrNum)    
+    
     #컬럼 인덱스 입력
-    for i, value in enumerate(nn):
-        x.cell(row=i+8, column=1, value=value)
+    for i, value in enumerate(nArrNum):
+        aa.cell(row=i+8, column=1, value=value)
     #컬럼명 조사
     columnNames = tableDetailByName['컬럼명']
     cn = columnNames.values
     #컬럼명 입력
     for i, value in enumerate(cn):
-        x.cell(row=i+8, column=6, value=value)
+        aa.cell(row=i+8, column=5, value=value)
     #데이터 형 조사
     dataTypes = tableDetailByName['데이터 길이']
     dt = dataTypes.values
     #데이터 형 입력
     for i, value in enumerate(dt):
-        x.cell(row=i+8, column=7, value=value)
+        aa.cell(row=i+8, column=7, value=value)
     #컬럼설명 조사
     columnDescs = tableDetailByName['컬럼설명']
     cd = columnDescs.values
     #컬럼설명 입력
     for i, value in enumerate(cd):
-        x.cell(row=i+8, column=9, value=value)
+        aa.cell(row=i+8, column=9, value=value)
     #눌 허용 조사
     isNull = tableDetailByName['NULL허용']
     isn = isNull.values
     # 눌 허용값 입력
     for i, value in enumerate(isn):
-        x.cell(row=i+8, column=5, value=value)
+        aa.cell(row=i+8, column=4, value=value)
     #디폴트값 조사
     isDefault = tableDetailByName['디폴트값']
     isd = isDefault.values
-    isdS = isd.astype(str)
+    #isdS = isd.astype(str)
 
     #디폴트값 입력
-    for i, value in enumerate(isdS):
-        x.cell(row=i+8, column=8, value=value)
+    for i, value in enumerate(isd):
+        aa.cell(row=i+8, column=8, value=value)
     
     ## PK와 FK 컬럼에 'Y' 표기
     ## .values 또는 to._numpy()  numpy배열로 변환함!
     ## 인덱싱으로 특정값을 변경한다. (Indexing: a[a < 0] = 0) 
     isThisPK = tableDetailByName['KEY'].to_numpy()
-    isThisPK[isThisPK=='PRI']='Y'
+    isThisPK[isThisPK=='MUL']='FK'
     for i, value in enumerate(isThisPK):
-        x.cell(row=i+8, column=2, value=value)
+        aa.cell(row=i+8, column=2, value=value)
     
-    isThisFK = tableDetailByName['KEY'].values
-    isThisFK[isThisFK=='MUL'] = 'Y'
-    isThisFK[isThisFK!='MUL'] = ''
-    for i, value in enumerate(isThisFK):
-        x.cell(row=i+8, column=4, value=value)
-    ## 데이터프레임에 아예 변화를 주기때문에 엑셀화 할때 제일 마지막단계에서 실행해주고 다음
-    ## 테이블로 넘어간다..
+
+
+    totalCellRows = nn+8
+    totalCellColumns = 10
+
+    ##셀 스타일 적용이 안되는중.. 
+    #셀 스타일
+    def cellStyleSet(aa, totalCellRows):
+        for rows in aa.iter_rows(min_row=1, max_row=6, min_col=1, max_col=1):
+            for cell in rows:
+                cell.fill = PatternFill(fgColor="00C0C0C0", fill_type = "solid")
+
+        for rows in aa.iter_rows(min_row=1, max_row=1, min_col=1, max_col=10):
+            for cell in rows:
+                cell.fill = PatternFill(fgColor="00C0C0C0", fill_type = "solid")
+
+        thin = Side(border_style="thin", color="000000")
+        border = Border(left=thin, right=thin, top=thin, bottom=thin)
+        rows = aa[totalCellRows]
+        for row in rows:
+            for cell in row:
+                cell.border = border
+
+
 
 
 #테이블명의 length
 lenarr = len(arrTableNames)
 
-
 #for loop 을 이용하여 함수호출!
 
-print("테이블명세서 작업 시작")
+print("시트생성 작업 시작")
 for a in range(lenarr):
     
     createWB(a)
-            
+print("시트생성 작업 끝")
+
+
+#참조테이블 찾아서 삽입
+dfFK = dbInfo[dbInfo['KEY']=='MUL']
+dfPK = dbInfo[dbInfo['KEY']=='PRI']
+
+
+dfFK.head()
+
+dfPK.head()
+
+
+arrFKNames = dfFK['컬럼명'].to_numpy()
+    
+print(arrFKNames)
+
+pkNames = dfPK.loc[dfPK['컬럼명'].isin(arrFKNames)]
+pkNames.info()
+
+arrParentTableNum =[]
+arrParentTableNum = dfFK['컬럼명'].isin(pkNames['컬럼명']).index
+arrParentTableNum
+
+x
+for i in arrParentTableNum:
+    x = dfPK.iloc[i]
+
+dfFK['참조 테이블']
+
+""" print("모든 sheet combine 작업 시작")
+
+import sys
+input_file = 'C:\\your_path\\Book1.xlsx'
+output_file = 'C:\\your_path\\BookFinal.xlsx'
+
+input_file = 'D:\\dev-envs\\pyexcel\\test.xlsx'
+output_file = 'D:\\dev-envs\\pyexcel\\테이블명세서.xlsx'
+df = pd.read_excel(input_file, None)
+all_df = []
+for key in df.keys():
+    all_df.append(df[key])
+data_concatenated = pd.concat(all_df,axis=0,ignore_index=True)
+writer = pd.ExcelWriter(output_file)
+data_concatenated.to_excel(writer,sheet_name='merged',index=False)
+writer.save()
+print("모든 sheet combine 작업 끝")
+
+print("테이블명세서 작업 완료")  """
+
+
+
