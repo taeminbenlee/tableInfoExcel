@@ -11,6 +11,59 @@ print('테이블 명세서 코드')
 #데이터 처리
 dbInfo = pd.read_excel('saleviscaretable.xlsx')
 print(dbInfo.head())
+#참조테이블 찾아서 삽입
+dbInfo['참조테이블'] = ''
+dfFK = dbInfo[dbInfo['KEY']=='MUL']
+dfPK = dbInfo[dbInfo['KEY']=='PRI']
+
+arrFKNames = dfFK['컬럼명'].to_numpy()
+#print(arrFKNames)
+
+#PK 로 설정된 컬럼명들에서 FK로 설정된 컬럼명과 같은 컬럼들만 뽑아낸다..
+#이러면 그 결과의 테이블명을 알아냄으로써 FK인 컬럼들의 참조테이블명을 알아내기 위함.
+pkNames = dfPK.loc[dfPK['컬럼명'].isin(arrFKNames)]
+
+arrParentTableNum =[]
+arrParentTableNum = dfFK['컬럼명'].isin(pkNames['컬럼명']).index
+#arrParentTableNum
+#FK로 설정된 컬럼들의 인덱스 넘버..
+
+#df[df['id'].isin(['b', 'e', 'k'])]
+
+#arrParentTableNum 을 포문으로 돌려서 그 인덱스에 값을 넣어준다.
+
+for x in arrParentTableNum:
+    #fk 인덱스
+    print(x)
+    #컬럼명 값 얻기
+    xx =[]
+    xx = dfFK.loc[x, ['컬럼명']].values
+    print(xx)
+    #얻은 컬럼명을 PK만 있는 데이터프레임에 비교하여 인덱스 얻기
+    
+    xxx=dfPK.loc[dfPK['컬럼명'].isin(xx)].index
+    print(xxx)
+    # 얻은 인덱스로 테이블명 얻기
+    #for y in xxx:
+        #print(y)
+    xxxx = str(dfPK.loc[xxx,['테이블명']].values)
+    """
+    characters = "]'["
+    #문자열 제거... 
+    for x in range(len(characters)):
+        xxxx = xxxx.replace(characters[x],"")
+        """
+    print(xxxx)
+        #얻은 테이블명을 참조테이블에 넣기 
+      # df.loc[rowIndex, 'New Column Title'] = "some value"
+      
+    dbInfo.loc[x, '참조테이블'] = xxxx
+    
+    print(dbInfo.iloc[x]['참조테이블'])
+
+
+
+
 ## 반복문을 위한 테이블명을 조사 중복을 없앤다
 dbInfo['테이블명'].duplicated()
 ## true == 중복, false == 최초의 값, 즉, false만 뽑으면 각 테이블명만 담아낼수 있다..
@@ -197,10 +250,20 @@ def printTableValues(aa, a):
     for i, value in enumerate(isThisPK):
         aa.cell(row=i+8, column=2, value=value)
     
+    #참조테이블 정보 입력
 
+    isThisParentTable = tableDetailByName['참조테이블']
+    isTPT = isThisParentTable.values
+    for i, value in enumerate(isTPT):
+        aa.cell(row=i+8, column=10, value=value)
+
+    
+ 
 
     totalCellRows = nn+8
     totalCellColumns = 10
+
+
 
     ##셀 스타일 적용이 안되는중.. 
     #셀 스타일
@@ -234,33 +297,6 @@ for a in range(lenarr):
     createWB(a)
 print("시트생성 작업 끝")
 
-
-#참조테이블 찾아서 삽입
-dfFK = dbInfo[dbInfo['KEY']=='MUL']
-dfPK = dbInfo[dbInfo['KEY']=='PRI']
-
-
-dfFK.head()
-
-dfPK.head()
-
-
-arrFKNames = dfFK['컬럼명'].to_numpy()
-    
-print(arrFKNames)
-
-pkNames = dfPK.loc[dfPK['컬럼명'].isin(arrFKNames)]
-pkNames.info()
-
-arrParentTableNum =[]
-arrParentTableNum = dfFK['컬럼명'].isin(pkNames['컬럼명']).index
-arrParentTableNum
-
-x
-for i in arrParentTableNum:
-    x = dfPK.iloc[i]
-
-dfFK['참조 테이블']
 
 """ print("모든 sheet combine 작업 시작")
 
