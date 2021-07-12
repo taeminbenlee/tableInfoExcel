@@ -3,7 +3,7 @@ print("hello")
 import numpy as np
 import pandas as pd
 import openpyxl
-from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
 
 print('테이블 명세서 코드')
 
@@ -118,7 +118,7 @@ def createWB(a):
     
     ##엑셀파일 저장
     print("엑셀파일 저장")
-    wb.save(filename="test.xlsx")
+    wb.save(filename="테이블별 명세서.xlsx")
     
 
 ## 테이블명세서의 헤더 만드는 함수.
@@ -204,8 +204,27 @@ def printTableValues(aa, a):
     for nNum in range(nn):
         nArrNum += [nNum + 1]
 
-    print(nArrNum)    
-    
+    print(nArrNum)   
+
+    #배경색 설정
+    totalCellRows = nn+8
+    my_bgColor = openpyxl.styles.colors.Color(rgb='00C0C0C0')
+    my_fill = openpyxl.styles.fills.PatternFill(patternType='solid', fgColor=my_bgColor)
+    aa['A1'].fill = my_fill
+    aa['A2'].fill = my_fill 
+    aa['A3'].fill = my_fill
+    aa['A4'].fill = my_fill
+    aa['A5'].fill = my_fill
+    aa['A6'].fill = my_fill
+    aa['A7'].fill = my_fill
+    aa['B7'].fill = my_fill
+    aa['D7'].fill = my_fill
+    aa['E7'].fill = my_fill
+    aa['G7'].fill = my_fill
+    aa['H7'].fill = my_fill
+    aa['I7'].fill = my_fill
+    aa['J7'].fill = my_fill
+
     #컬럼 인덱스 입력
     for i, value in enumerate(nArrNum):
         aa.cell(row=i+8, column=1, value=value)
@@ -257,31 +276,19 @@ def printTableValues(aa, a):
     for i, value in enumerate(isTPT):
         aa.cell(row=i+8, column=10, value=value)
 
-    
- 
+    #보더 설정
+    thin = Side(border_style="thin", color="000000")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    bb = len(aa['J'])
+    bbb = 'J'+str(bb)
+    for row in aa['A1':bbb]:
+        for cell in row:
+            cell.border = border
 
-    totalCellRows = nn+8
-    totalCellColumns = 10
 
 
 
-    ##셀 스타일 적용이 안되는중.. 
-    #셀 스타일
-    def cellStyleSet(aa, totalCellRows):
-        for rows in aa.iter_rows(min_row=1, max_row=6, min_col=1, max_col=1):
-            for cell in rows:
-                cell.fill = PatternFill(fgColor="00C0C0C0", fill_type = "solid")
 
-        for rows in aa.iter_rows(min_row=1, max_row=1, min_col=1, max_col=10):
-            for cell in rows:
-                cell.fill = PatternFill(fgColor="00C0C0C0", fill_type = "solid")
-
-        thin = Side(border_style="thin", color="000000")
-        border = Border(left=thin, right=thin, top=thin, bottom=thin)
-        rows = aa[totalCellRows]
-        for row in rows:
-            for cell in row:
-                cell.border = border
 
 
 
@@ -298,25 +305,52 @@ for a in range(lenarr):
 print("시트생성 작업 끝")
 
 
-""" print("모든 sheet combine 작업 시작")
+print("모든 sheet combine 작업 시작")
 
-import sys
-input_file = 'C:\\your_path\\Book1.xlsx'
-output_file = 'C:\\your_path\\BookFinal.xlsx'
+# empty dictionary 생성
+df = []
+# 여러 시트를 가지고 있는 엑셀파일
+#wb = openpyxl.load_workbook('테이블명세서.xlsx')  같은 방법.
+f = "D:\dev-envs\pyexcel/테이블별 명세서.xlsx" 
 
-input_file = 'D:\\dev-envs\\pyexcel\\test.xlsx'
-output_file = 'D:\\dev-envs\\pyexcel\\테이블명세서.xlsx'
-df = pd.read_excel(input_file, None)
-all_df = []
-for key in df.keys():
-    all_df.append(df[key])
-data_concatenated = pd.concat(all_df,axis=0,ignore_index=True)
-writer = pd.ExcelWriter(output_file)
-data_concatenated.to_excel(writer,sheet_name='merged',index=False)
-writer.save()
-print("모든 sheet combine 작업 끝")
+# 합치고자 하는 시트의 갯수..
+#numberOfSheets = 477
+xl = pd.ExcelFile('D:\dev-envs\pyexcel/테이블별 명세서.xlsx')
+numberOfSheets = len(xl.sheet_names)
 
-print("테이블명세서 작업 완료")  """
+print("합칠 시트의수: "+str(numberOfSheets))
+
+for i in range(1,numberOfSheets):    
+     data = pd.read_excel(f, sheet_name = str(i), header=None) 
+     df.append(data)
+#remember python is very strict on how you arrange stuff so be aware of this
+
+#새로 저장할 엑셀파일의 저장 경로와 이름 지정
+print('새로 저장할 엑셀파일의 저장 경로와 이름 지정')
+final = "D:\dev-envs\pyexcel//테이블명세서.xlsx"
+print("D:\dev-envs\pyexcel//테이블명세서.xlsx")
+
+#모든 시트를 담은 데이터프레임을 합친다
+df = pd.concat(df)
+
+#데이터프레임의 인덱스와 헤더를 제거한후 엑셀로 저장한다.
+df.to_excel(final, sheet_name='테이블명세서', index=False, header=False)
+
+#보더 설정
+from openpyxl import load_workbook
+wb1 = load_workbook(filename = '테이블명세서.xlsx')
+ws1 = wb1.active
+
+thin = Side(border_style="thin", color="000000")
+border = Border(left=thin, right=thin, top=thin, bottom=thin)
+bb = len(ws1['J'])
+bbb = 'J'+str(bb)
+for row in ws1['A1':bbb]:
+    for cell in row:
+        cell.border = border
+
+
+print("테이블명세서 작업 완료")
 
 
 
